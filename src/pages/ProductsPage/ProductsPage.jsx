@@ -6,11 +6,23 @@ import { useState, useEffect } from 'react'
 const api = process.env.REACT_APP_API
 const ProductsPage = () => {
   const [category, setCategory] = useState('название-убыв')
+
+  const [type, setType] = useState('')
+  const [typeModalOpened, setTypeModalOpened] = useState()
+
   const [products, setProducts] = useState([])
-  const [error, setError] = useState('')
+  const [error, setError] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [popUpOpened, setPopUpOpened] = useState(false)
-
+  const typeEndPoint = useMemo(() => {
+    if (type === 'none') {
+      return ''
+    } else if (type === 'Headphones') {
+      return '&type=headphones'
+    } else if (type === 'Tablets') {
+      return '&type=tablets'
+    }
+  }, [type])
   const endPoint = useMemo(() => {
     if (category === 'название-убыв') {
       return '?sortBy=title&order=desc'
@@ -26,10 +38,14 @@ const ProductsPage = () => {
     setCategory(cat)
     setPopUpOpened(false)
   }
+  const selectType = (cat) => {
+    setType(cat)
+    setTypeModalOpened(false)
+  }
   const getProducts = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`${api}/items${endPoint}`)
+      const response = await fetch(`${api}/items${endPoint}${typeEndPoint}`)
       const json = await response.json()
       setProducts(json)
     } catch (err) {
@@ -40,7 +56,7 @@ const ProductsPage = () => {
   }
   useEffect(() => {
     getProducts()
-  }, [endPoint])
+  }, [endPoint, typeEndPoint])
   return (
     <div className="products-wrapper">
       <div className="products-top">
@@ -84,6 +100,40 @@ const ProductsPage = () => {
                 className="filter-item"
               >
                 дата-возр
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="filter-wrapper">
+          <button
+            onClick={() => setTypeModalOpened((state) => !state)}
+            className="products-filter"
+          >
+            {type}
+            <img
+              width="64"
+              height="64"
+              src="https://img.icons8.com/sf-black/64/FFFFFF/down.png"
+              alt="down"
+            />
+          </button>
+          {typeModalOpened && (
+            <div className="popUp type">
+              <div className="filter-item" onClick={() => selectType('none')}>
+                none
+              </div>
+              <div
+                className="filter-item"
+                onClick={() => selectType('Headphones')}
+              >
+                Headphones
+              </div>
+
+              <div
+                onClick={() => selectType('Tablets')}
+                className="filter-item"
+              >
+                Tablets
               </div>
             </div>
           )}
